@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environment
+venv/
+ENV/
+env/
+.venv/
+
+# VSCode
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Byte-compiled / log files
+*.log
+*.pot
+*.pyc
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
