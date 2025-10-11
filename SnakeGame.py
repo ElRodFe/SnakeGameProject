@@ -7,8 +7,9 @@ from pygame.math import Vector2
 class SNAKE:
      def __init__(self):
             self.body = [Vector2(5,10), Vector2(4,10), Vector2(3,10)]
-            self.direction = Vector2(1,0)
+            self.direction = Vector2(0,0) #snake static until you press a key
             self.new_block = False
+            self.bite_sound = pygame.mixer.Sound("sounds/bite.mp3")
 
      def draw_snake(self):
           #Positioning each "piece" of the snake
@@ -31,6 +32,13 @@ class SNAKE:
      
      def add_block(self):
           self.new_block = True
+
+     def play_bite_sound(self):
+          self.bite_sound.play()
+
+     def reset(self):
+          self.body = [Vector2(5,10), Vector2(4,10), Vector2(3,10)] #reset the snake
+          self.direction = Vector2(0,0) #snake static until you press a key
 
 #Create fruit class
 class FRUIT:
@@ -60,13 +68,20 @@ class MAIN:
           self.check_fail()
      
      def draw_elements(self):
+        self.draw_grass()
         self.fruit.draw_fruit()
         self.snake.draw_snake()
+        self.draw_score()
      
      def bite(self):
           if self.fruit.pos == self.snake.body[0]: #Check if the snake's head touches the fruit
                self.fruit.random_pos() #make the fruit change its position when bitten
                self.snake.add_block() #make the snake bigger
+               self.snake.play_bite_sound()
+
+          for block in self.snake.body[0:]: #Avoid the fruit from spawning on the snake's body
+               if block == self.fruit.pos:
+                    self.fruit.random_pos()
 
      def check_fail(self):
           #check if the snake hits the border of the screen
@@ -79,10 +94,33 @@ class MAIN:
                     self.game_over()
 
      def game_over(self):
-          pygame.quit()
-          sys.exit()
+          self.snake.reset()
+     
+     def draw_grass(self):
+          grass_color = (51, 95, 0)
+          for row in range(cell_number):
+               if row % 2 == 0:
+                    for col in range(cell_number):
+                         if col % 2 == 0:
+                              grass_rect = pygame.Rect(col * cell_size, row * cell_size, cell_size, cell_size)
+                              pygame.draw.rect(screen, grass_color, grass_rect)
+               else:
+                    for col in range(cell_number):
+                         if col % 2 != 0:
+                              grass_rect = pygame.Rect(col * cell_size, row * cell_size, cell_size, cell_size)
+                              pygame.draw.rect(screen, grass_color, grass_rect)
 
+     def draw_score(self):
+          score_text = str(len(self.snake.body) - 3) #Get the score given the length of the snake
+          score_surface = game_font.render(score_text, True, (0,0,0))
 
+          #Creante positioning for the score in screen and insert it
+          score_x = int(cell_size * cell_number - 60)
+          score_y = int(cell_size * cell_number - 40)
+          score_rect = score_surface.get_rect(center = (score_x, score_y))
+          screen.blit(score_surface, score_rect)
+
+pygame.mixer.pre_init(44100, -16, 512)
 pygame.init()
 
     ###Game program elements
@@ -91,6 +129,7 @@ cell_number = 20
 screen = pygame.display.set_mode((cell_number * cell_size, cell_number * cell_size))
 clock = pygame.time.Clock()
 grass_color = (51, 102, 0)
+game_font = pygame.font.Font(None, 25) #Default fonr from PyGame for text
 
 apple = pygame.image.load("graphics/apple.png").convert_alpha() #import the fruit image
 apple = pygame.transform.scale(apple, (cell_size, cell_size)) #make the image the size of a block
